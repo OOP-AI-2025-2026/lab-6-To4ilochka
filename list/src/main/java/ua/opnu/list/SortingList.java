@@ -30,6 +30,8 @@ public class SortingList extends Application {
     // Інтерфейс ObservableList схожий на інтерфейс List, але
     // має можливість оповіщати інші об'єкти у тому, що він змінився
     private ObservableList<Student> students;
+    private Comparator<Student> currentSorter;
+    private boolean isReversed = false;
 
     /*
      * Цей метод запускається, коли запускається ваш додаток.
@@ -115,22 +117,18 @@ public class SortingList extends Application {
         sortByLastNameButton.setMaxWidth(Double.MAX_VALUE);
         sortByMarkButton.setMaxWidth(Double.MAX_VALUE);
 
+        currentSorter = new NameSorter();
+
         // Обробка натискання кнопки за допомогою об'єкта анонімного класу,
         // реалізує інтерфейс Comparable
 
-        final boolean[] order = {true};
-
-        sortByNameButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                students.sort(new NameSorter(order[0]));
-                order[0] = !order[0];
-            }
-        });
+        sortByNameButton.setOnAction(event -> applySort(new NameSorter()));
 
         // TODO: Обробка натискання на кнопку "Сортувати за прізвищем"
+        sortByLastNameButton.setOnAction(event -> applySort(new SurnameSorter()));
 
         // TODO: Обробка натискання на кнопку "Сортувати за оцінкою"
+        sortByMarkButton.setOnAction(event -> applySort(new GradeSorter()));
 
         // Створюємо горизонтальний ряд
         HBox hb = new HBox();
@@ -147,5 +145,20 @@ public class SortingList extends Application {
     public static void main(String[] args) {
         // Метод запускає додаток
         launch(args);
+    }
+
+    private void applySort(Comparator<Student> newSorter) {
+        if (currentSorter.getClass().equals(newSorter.getClass())) {
+            isReversed = !isReversed;
+        } else {
+            currentSorter = newSorter;
+            isReversed = false;
+        }
+
+        if (isReversed) {
+            students.sort(currentSorter.reversed());
+        } else {
+            students.sort(currentSorter);
+        }
     }
 }
